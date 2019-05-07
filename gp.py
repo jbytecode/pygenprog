@@ -14,7 +14,7 @@ class GP:
     def getClassList(self):
         return self.classlist
 
-    def addConstant(self, constant):
+    def addConstant(self, constant: float):
         self.constantlist.append(constant)
 
     def getConstantList(self):
@@ -39,8 +39,7 @@ class GP:
                 params.append(current_identifier)
         return cls(params)
 
-
-
+   
 
 
 
