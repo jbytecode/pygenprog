@@ -39,25 +39,54 @@ class GP:
                 params.append(current_identifier)
         return cls(params)
 
-   
+    def generateRandomExpression(self) -> Expression:
+        cls = random.choice(self.classlist)
+        left = self.generateRandomTerminalExpression()
+        right = self.generateRandomTerminalExpression()
+        obj = cls([left, right])
+        return obj
 
+    def generateRandomExpressionDeep2(self) -> Expression:
+        cls = random.choice(self.classlist)
+        left = self.generateRandomExpression()
+        right = self.generateRandomExpression()
+        obj = cls([left, right])
+        return obj
+    
+    def generateRandomExpressionDeep4(self) -> Expression:
+        cls = random.choice(self.classlist)
+        left = self.generateRandomExpressionDeep2()
+        right = self.generateRandomExpressionDeep2()
+        obj = cls([left, right])
+        return obj
+
+    def generateRandomExpressionDeep8(self) -> Expression:
+        cls = random.choice(self.classlist)
+        left = self.generateRandomExpressionDeep4()
+        right = self.generateRandomExpressionDeep4()
+        obj = cls([left, right])
+        return obj
 
 
 gp = GP()
 env = Environment()
+env.setVariable("x", 10)
 
 gp.addClass(PlusExpression)
 gp.addClass(MinusExpression)
 gp.addClass(ProductExpression)
 gp.addClass(DivideExpression)
+gp.addClass(AbsExpression)
+gp.addClass(LogarithmExpression)
 
 gp.addIdentifierExpression(IdentifierExpression(["x"]))
 
 gp.addConstant(1)
 gp.addConstant(2)
 gp.addConstant(3)
+gp.addConstant(4)
 
-expr = gp.generateRandomTerminalExpression()
+
+expr = gp.generateRandomExpressionDeep8()
 print(expr)
-env.setVariable("x", 10)
 print(expr.eval(env))

@@ -1,3 +1,5 @@
+import math
+
 class Environment:
     def __init__(self):
         self.variablepool = {}
@@ -110,3 +112,34 @@ class DivideExpression(Expression):
     def __str__(self):
         return ("(" + str(self.args[0]) + " / " + str(self.args[1]) + ")")
 
+
+class AbsExpression(Expression):
+
+    def __init__(self, args):
+        Expression.__init__(self, args)
+    
+    def eval(self, envir):
+        return abs(self.args[0].eval(envir))
+
+    @staticmethod
+    def getParametersCount():
+        return 1
+    
+    def __str__(self):
+        return "|" + str(self.args[0]) + "|";
+
+
+class LogarithmExpression(Expression):
+    
+    def __init__(self, args):
+        return Expression.__init__(self, args)
+
+    def eval(self, envir):
+        return math.log2(self.args[0].eval(envir))
+    
+    @staticmethod
+    def getParametersCount():
+        return 1
+
+    def __str__(self):
+        return "log(" + str(self.args[0]) + ")"
