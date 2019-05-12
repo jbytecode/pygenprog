@@ -46,40 +46,40 @@ class GP:
         obj = cls([left, right])
         return obj
 
-    def generateRandomExpressionDeep2(self) -> Expression:
-        cls = random.choice(self.classlist)
-        left = self.generateRandomExpression()
-        right = self.generateRandomExpression()
-        obj = cls([left, right])
-        return obj
-    
-    def generateRandomExpressionDeep4(self) -> Expression:
-        cls = random.choice(self.classlist)
-        left = self.generateRandomExpressionDeep2()
-        right = self.generateRandomExpressionDeep2()
-        obj = cls([left, right])
-        return obj
 
-    def generateRandomExpressionDeep8(self) -> Expression:
+    def generateRandomExpressionDeep(self, deep: int) -> Expression:
         cls = random.choice(self.classlist)
-        left = self.generateRandomExpressionDeep4()
-        right = self.generateRandomExpressionDeep4()
-        obj = cls([left, right])
-        return obj
+        if deep == 0:
+            obj = self.generateRandomTerminalExpression()
+            return obj
+        elif deep == 1:
+            cls = random.choice(self.classlist)
+            left = self.generateRandomTerminalExpression()
+            right = self.generateRandomTerminalExpression()
+            obj = cls([left, right])
+            return obj
+        else:
+            cls = random.choice(self.classlist)
+            left = self.generateRandomExpressionDeep(deep - 1)
+            right = self.generateRandomExpressionDeep(deep - 1)
+            obj = cls([left, right])
+            return obj
 
 
 gp = GP()
 env = Environment()
 env.setVariable("x", 10)
+env.setVariable("y", 2)
 
 gp.addClass(PlusExpression)
-gp.addClass(MinusExpression)
-gp.addClass(ProductExpression)
-gp.addClass(DivideExpression)
-gp.addClass(AbsExpression)
-gp.addClass(LogarithmExpression)
+# gp.addClass(MinusExpression)
+# gp.addClass(ProductExpression)
+# gp.addClass(DivideExpression)
+# gp.addClass(AbsExpression)
+# gp.addClass(LogarithmExpression)
 
 gp.addIdentifierExpression(IdentifierExpression(["x"]))
+gp.addIdentifierExpression(IdentifierExpression(["y"]))
 
 gp.addConstant(1)
 gp.addConstant(2)
@@ -87,6 +87,9 @@ gp.addConstant(3)
 gp.addConstant(4)
 
 
-expr = gp.generateRandomExpressionDeep8()
+expr = gp.generateRandomExpressionDeep(4)
 print(expr)
-print(expr.eval(env))
+try:
+    print(expr.eval(env))
+except Exception as ex:
+    print("Error: " + ex.__str__())
