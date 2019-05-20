@@ -65,6 +65,27 @@ class GP:
             obj = cls([left, right])
             return obj
 
+    def getMinimumDeepness(self, expr: Expression, deep: int = 0) -> int:
+        if type(expr).__name__ == "IdentifierExpression":
+            return (deep -1)
+        if type(expr).__name__ == "NumericExpression":
+            return (deep -1)
+        if(expr.getParametersCount() == 1):
+            exprsub = expr.getArgs()[0]
+            return (1 + self.getMinimumDeepness(exprsub, deep))
+        if(expr.getParametersCount() == 2):
+            left = self.getMinimumDeepness(expr.getArgs()[0], deep)
+            right = self.getMinimumDeepness(expr.getArgs()[1], deep)
+            return (1 + deep + min([left, right]))
+
+    def selectRandomNode(self, expr: Expression) -> Expression:
+        mindeep = self.getMinimumDeepness(expr)
+        myrange = range(0, mindeep + 1)
+        index = random.sample(myrange, 1)
+        myexpr = expr
+        i = 0
+        while (i < index):
+            if()
 
 gp = GP()
 env = Environment()
@@ -87,8 +108,10 @@ gp.addConstant(3)
 gp.addConstant(4)
 
 
-expr = gp.generateRandomExpressionDeep(4)
+expr = gp.generateRandomExpressionDeep(3)
 print(expr)
+print("Min deepness: " + str(gp.getMinimumDeepness(expr, 0)))
+print("Random node:" + str(gp.selectRandomNode(expr)))
 try:
     print(expr.eval(env))
 except Exception as ex:

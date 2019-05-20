@@ -18,6 +18,9 @@ class Expression:
     def eval(self, envir):
         pass
 
+    def getArgs(self) -> list:
+        return self.args
+
     @staticmethod
     def getParametersCount():
         pass
@@ -29,7 +32,7 @@ class NumericExpression(Expression):
 
     def eval(self, envir):
         return self.args[0]
-
+    
     @staticmethod
     def getParametersCount():
         return 1
