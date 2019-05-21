@@ -80,12 +80,25 @@ class GP:
 
     def selectRandomNode(self, expr: Expression) -> Expression:
         mindeep = self.getMinimumDeepness(expr)
-        myrange = range(0, mindeep + 1)
+        myrange = range(0, mindeep)
         index = random.sample(myrange, 1)
         myexpr = expr
         i = 0
-        while (i < index):
-            if()
+        while (i < index[0]):
+            if(type(myexpr).__name__ == "IdentifierExpression"):
+                return myexpr
+            elif(type(myexpr).__name__ == "NumericExpression"):
+                return myexpr
+            else:
+                if(random.sample([0,1], 1)[0] == 0):
+                    myexpr = myexpr.args[0]
+                else:
+                    if(myexpr.getParametersCount() > 1):
+                        myexpr = myexpr.args[1]
+                    else:
+                        myexpr = myexpr.args[0]
+            i = i + 1
+        return myexpr
 
 gp = GP()
 env = Environment()
