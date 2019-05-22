@@ -121,10 +121,11 @@ gp.addConstant(3)
 gp.addConstant(4)
 
 
-expr = gp.generateRandomExpressionDeep(3)
+expr = gp.generateRandomExpressionDeep(2)
 print(expr)
-print("Min deepness: " + str(gp.getMinimumDeepness(expr, 0)))
-print("Random node:" + str(gp.selectRandomNode(expr)))
+print(expr.toPostFix())
+
+
 try:
     print(expr.eval(env))
 except Exception as ex:

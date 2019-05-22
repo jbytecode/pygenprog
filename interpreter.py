@@ -1,5 +1,17 @@
 import math
 
+class Symbol:
+    def __init__(self, symbol: str):
+        self.symbol = symbol
+
+    def __str__(self):
+        return str(self.symbol)
+
+    def __repr__(self):
+        return "SYM(" + str(self.symbol) + ")"
+
+    
+
 class Environment:
     def __init__(self):
         self.variablepool = {}
@@ -25,6 +37,9 @@ class Expression:
     def getParametersCount():
         pass
 
+    def toPostFix(self) -> list:
+        pass
+
 
 class NumericExpression(Expression):
     def __init__(self, args):
@@ -40,6 +55,8 @@ class NumericExpression(Expression):
     def __str__(self):
         return str(self.args[0])
 
+    def toPostFix(self):
+        return ([self.args[0]])
 
 class IdentifierExpression(Expression):
     def __init__(self, args):
@@ -54,6 +71,9 @@ class IdentifierExpression(Expression):
 
     def __str__(self):
         return str(self.args[0])
+
+    def toPostFix(self):
+        return ([self.args[0]])
 
 
 class PlusExpression(Expression):
@@ -70,6 +90,14 @@ class PlusExpression(Expression):
     def __str__(self):
         return ("(" + str(self.args[0]) + " + " + str(self.args[1]) + ")")
 
+    def toPostFix(self):
+        result = []
+        result.extend(self.args[0].toPostFix())
+        result.extend(self.args[1].toPostFix())
+        result.extend([Symbol("+")])
+        return(result)
+    
+        
 
 class MinusExpression(Expression):
     def __init__(self, args):
@@ -85,6 +113,13 @@ class MinusExpression(Expression):
     def __str__(self):
         return ("(" + str(self.args[0]) + " - " + str(self.args[1]) + ")")
 
+    def toPostFix(self):
+        return self.args[0].toPostFix().extend(
+            [
+            self.args[1].toPostFix(),
+            Symbol("-")
+            ]
+        )
 
 class ProductExpression(Expression):
     def __init__(self, args):
@@ -99,6 +134,14 @@ class ProductExpression(Expression):
 
     def __str__(self):
         return ("(" + str(self.args[0]) + " * " + str(self.args[1]) + ")")
+
+    def toPostFix(self):
+        return self.args[0].toPostFix().extend(
+            [
+            self.args[1].toPostFix(),
+            Symbol("*")
+            ]
+        )
 
 
 class DivideExpression(Expression):
@@ -115,6 +158,13 @@ class DivideExpression(Expression):
     def __str__(self):
         return ("(" + str(self.args[0]) + " / " + str(self.args[1]) + ")")
 
+    def toPostFix(self):
+        return self.args[0].toPostFix().extend(
+            [
+            self.args[1].toPostFix(),
+            Symbol("/")
+            ]
+        )
 
 class AbsExpression(Expression):
 
@@ -131,6 +181,12 @@ class AbsExpression(Expression):
     def __str__(self):
         return "|" + str(self.args[0]) + "|";
 
+    def toPostFix(self):
+        return self.args[0].toPostFix().extend(
+            [
+            Symbol("abs")
+            ]
+        )
 
 class LogarithmExpression(Expression):
     
@@ -146,3 +202,10 @@ class LogarithmExpression(Expression):
 
     def __str__(self):
         return "log(" + str(self.args[0]) + ")"
+
+    def toPostFix(self):
+        return self.args[0].toPostFix().extend(
+            [
+            Symbol("log")
+            ]
+        )
