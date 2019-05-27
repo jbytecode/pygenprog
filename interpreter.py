@@ -1,211 +1,88 @@
+
 import math
 
-class Symbol:
-    def __init__(self, symbol: str):
-        self.symbol = symbol
-
-    def __str__(self):
-        return str(self.symbol)
-
-    def __repr__(self):
-        return "SYM(" + str(self.symbol) + ")"
-
-    
-
-class Environment:
-    def __init__(self):
-        self.variablepool = {}
-
-    def getVariable(self, varname):
-        return self.variablepool[varname]
-
-    def setVariable(self, varname, value):
-        self.variablepool[varname] = value
-
-
-class Expression:
-    def __init__(self, args):
-        self.args = args
-
-    def eval(self, envir):
+class GpFunction:
+    name = "no name"
+    numparams = 0
+    def __init__(self, name: str, numparams: int):
+        self.name = name;
+        self.numparams = numparams
+    def eval(self, params: list):
         pass
 
-    def getArgs(self) -> list:
-        return self.args
+class PlusFunction (GpFunction):
+    def eval(self, params: list):
+        param1 = params.pop()
+        param2 = params.pop()
+        params.append(param1 + param2)
 
-    @staticmethod
-    def getParametersCount():
-        pass
+class MinusFunction (GpFunction):
+    def eval(self, params: list):
+        param1 = params.pop()
+        param2 = params.pop()
+        params.append(param1 - param2)
 
-    def toPostFix(self) -> list:
-        pass
+class ProductFunction (GpFunction):
+    def eval(self, params: list):
+        param1 = params.pop()
+        param2 = params.pop()
+        params.append(param1 * param2)
+
+class DivideFunction (GpFunction):
+    def eval(self, params: list):
+        param1 = params.pop()
+        param2 = params.pop()
+        try:
+            result = param1 / param2
+        except:
+            result = float("-inf")
+        params.append(result)
+
+class PowerFunction (GpFunction):
+    def eval(self, params: list):
+        param1 = params.pop()
+        param2 = params.pop()
+        params.append(math.pow(param1, param2))
 
 
-class NumericExpression(Expression):
-    def __init__(self, args):
-        Expression.__init__(self, args)
+class LogFunction (GpFunction):
+    def eval(self, params: list):
+        param = params.pop()
+        try:
+            result = math.log(param)
+        except:
+            result = float("-inf")
+        params.append(result)
 
-    def eval(self, envir):
-        return self.args[0]
     
-    @staticmethod
-    def getParametersCount():
-        return 1
+def findFunction(funcname: str, gpFunctionList: [GpFunction]):
+    for gpfunc in gpFunctionList:
+        if gpfunc.name == funcname:
+            return gpfunc
+    return None
 
-    def __str__(self):
-        return str(self.args[0])
+def postfixeval (code: list, gpFunctionList: list, identifiers: list):
+    stack = []
+    for element in code:
+        t = type(element).__name__
+        if t == "int"  or t == "float":
+            stack.append(element)
+        elif t == "str":
+            GpFunc = findFunction(element, gpFunctionList)
+            if GpFunc != None:
+                GpFunc.eval(stack)
+            else:
+                stack.append(identifiers[element])
 
-    def toPostFix(self):
-        return ([self.args[0]])
-
-class IdentifierExpression(Expression):
-    def __init__(self, args):
-        Expression.__init__(self, args)
-
-    def eval(self, envir: Environment):
-        return envir.variablepool[self.args[0]]
-
-    @staticmethod
-    def getParametersCount():
-        return 1
-
-    def __str__(self):
-        return str(self.args[0])
-
-    def toPostFix(self):
-        return ([self.args[0]])
+    return stack
 
 
-class PlusExpression(Expression):
-    def __init__(self, args):
-        Expression.__init__(self, args)
 
-    def eval(self, envir):
-        return self.args[0].eval(envir) + self.args[1].eval(envir)
+if __name__ == "__main__":
+    funclist = [
+        PlusFunction("+", 2),
+        MinusFunction("-", 2)
+    ]
+    identifiers = {"x": 3, "y": 10}
+    print(postfixeval([2,2, "+", "y", "-"], funclist, identifiers))
 
-    @staticmethod
-    def getParametersCount():
-        return 2
-
-    def __str__(self):
-        return ("(" + str(self.args[0]) + " + " + str(self.args[1]) + ")")
-
-    def toPostFix(self):
-        result = []
-        result.extend(self.args[0].toPostFix())
-        result.extend(self.args[1].toPostFix())
-        result.extend([Symbol("+")])
-        return(result)
-    
-        
-
-class MinusExpression(Expression):
-    def __init__(self, args):
-        Expression.__init__(self, args)
-
-    def eval(self, envir):
-        return self.args[0].eval(envir) - self.args[1].eval(envir)
-
-    @staticmethod
-    def getParametersCount():
-        return 2
-
-    def __str__(self):
-        return ("(" + str(self.args[0]) + " - " + str(self.args[1]) + ")")
-
-    def toPostFix(self):
-        return self.args[0].toPostFix().extend(
-            [
-            self.args[1].toPostFix(),
-            Symbol("-")
-            ]
-        )
-
-class ProductExpression(Expression):
-    def __init__(self, args):
-        Expression.__init__(self, args)
-
-    def eval(self, envir):
-        return self.args[0].eval(envir) * self.args[1].eval(envir)
-
-    @staticmethod
-    def getParametersCount():
-        return 2
-
-    def __str__(self):
-        return ("(" + str(self.args[0]) + " * " + str(self.args[1]) + ")")
-
-    def toPostFix(self):
-        return self.args[0].toPostFix().extend(
-            [
-            self.args[1].toPostFix(),
-            Symbol("*")
-            ]
-        )
-
-
-class DivideExpression(Expression):
-    def __init__(self, args):
-        Expression.__init__(self, args)
-
-    def eval(self, envir):
-        return self.args[0].eval(envir) / self.args[1].eval(envir)
-
-    @staticmethod
-    def getParametersCount():
-        return 2
-
-    def __str__(self):
-        return ("(" + str(self.args[0]) + " / " + str(self.args[1]) + ")")
-
-    def toPostFix(self):
-        return self.args[0].toPostFix().extend(
-            [
-            self.args[1].toPostFix(),
-            Symbol("/")
-            ]
-        )
-
-class AbsExpression(Expression):
-
-    def __init__(self, args):
-        Expression.__init__(self, args)
-    
-    def eval(self, envir):
-        return abs(self.args[0].eval(envir))
-
-    @staticmethod
-    def getParametersCount():
-        return 1
-    
-    def __str__(self):
-        return "|" + str(self.args[0]) + "|";
-
-    def toPostFix(self):
-        return self.args[0].toPostFix().extend(
-            [
-            Symbol("abs")
-            ]
-        )
-
-class LogarithmExpression(Expression):
-    
-    def __init__(self, args):
-        return Expression.__init__(self, args)
-
-    def eval(self, envir):
-        return math.log2(self.args[0].eval(envir))
-    
-    @staticmethod
-    def getParametersCount():
-        return 1
-
-    def __str__(self):
-        return "log(" + str(self.args[0]) + ")"
-
-    def toPostFix(self):
-        return self.args[0].toPostFix().extend(
-            [
-            Symbol("log")
-            ]
-        )
