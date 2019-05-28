@@ -1,7 +1,7 @@
-from interpreter import GpFunction
-from interpreter import findFunction, findFunctionCount, postfixeval
-from interpreter import PlusFunction, MinusFunction, LogFunction, ProductFunction, DivideFunction, SqrtFunction
-from interpreter import PowerFunction
+from interpreter import *
+from interpreter import postfixeval
+
+import copy
 
 import random
 import math
@@ -46,7 +46,12 @@ class Chromosome:
                     if findFunction(self.code[len(self.code) - 1], self.functionlist) != None:
                         break
                 self.code.pop()
-        
+    
+    def eval(self):
+        result = postfixeval(self.code, self.functionlist, self.varlist)
+        return result
+
+    
 class GP:
     popsize = 100
     fitness = None
@@ -107,14 +112,14 @@ class GP:
         element = offspring[random_index]
         t = type(element).__name__
         if(t == "int" or t == "float"):
-            luckynum = random.choice(constantpool)
+            luckynum = random.choice(self.constantpool)
             offspring[random_index] = luckynum
         else:
-            gpfunc = findFunction(element, funclist)
+            gpfunc = findFunction(element, self.funclist)
             if gpfunc != None:
                 oldfunc = gpfunc
                 while True:
-                    luckyfun = random.choice(funclist)
+                    luckyfun = random.choice(self.funclist)
                     if luckyfun.numparams == oldfunc.numparams:
                         break
                 offspring[random_index] = luckyfun.name
@@ -131,7 +136,11 @@ class GP:
             f = self.fitness(self.chromosomes[i].code)
             self.chromosomes[i].fitness = f
         temppop = []
-        for i in range(int(len(self.chromosomes) / 2)):    
+        bestsolution = self.getBest()
+        temppop.append(copy.copy(bestsolution))
+        temppop.append(copy.copy(bestsolution))
+        print(bestsolution.code)
+        for i in range(int( (len(self.chromosomes) - 2) / 2)):    
             indices1 = random.choice(range(len(self.chromosomes)))
             indices2 = random.choice(range(len(self.chromosomes)))
             if(self.chromosomes[indices1].fitness > self.chromosomes[indices2].fitness):
@@ -157,10 +166,11 @@ class GP:
             temppop.append(ch2)    
         self.chromosomes = temppop
 
-    def getBest(self):
-        for element in self.chromosomes:
+    def calculateFitness(self):
+         for element in self.chromosomes:
             element.fitness = self.fitness(element.code)
 
+    def getBest(self):
         bestf = float("-inf")
         bestc = None
         for element in self.chromosomes:
@@ -169,34 +179,5 @@ class GP:
                 bestc = element
         return bestc
 
-if __name__ == "__main__":
-    funclist = [
-        PlusFunction("+", 2),
-        MinusFunction("-", 2),
-        ProductFunction("*", 2),
-        DivideFunction("/", 2),
-        LogFunction("Log", 1),
-        SqrtFunction("Sqrt", 1),
-        PowerFunction("Pow", 2)
-    ]
-    varlist = {"x": 1, "y": 2}
-    constantpool = [1,2,3,4]
 
-    def abs (x):
-        if x < 0:
-            return (-x)
-        else:
-            return x
-
-    def f (ch):
-        result = postfixeval(ch, funclist, varlist)[0]
-        return -abs(result - 400)   
-
-    gp = GP(f, funclist,varlist,constantpool, popsize = 100,  deep = 4, maxdeep=20)
-    gp.createRandomPopulation()
-    for i in range(100):
-        gp.iterate()
-
-    best = gp.getBest().code
-    print(str(best))
-    print(postfixeval(best, funclist, varlist))
+    

@@ -52,10 +52,13 @@ class PowerFunction (GpFunction):
             return float("-inf")
         param1 = params.pop()
         param2 = params.pop()
-        if(param1 > 10^5 or param2 > 10^5):
+        if(param1 > 10^5 or param2 > 10^5 or param1 < -10^5 or param2 < -10^5):
             params.append(float("-inf"))
         else:
-            params.append(math.pow(param1, param2))
+            try:
+                params.append(math.pow(param1, param2))
+            except:
+                params.append(float("-inf"))
             
 
 
@@ -78,6 +81,21 @@ class SqrtFunction (GpFunction):
         param = params.pop()
         try:
             result = math.sqrt(param)
+        except:
+            result = float("-inf")
+        params.append(result)
+
+
+class AbsFunction (GpFunction):
+    def eval(self, params: list):
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param = params.pop()
+        try:
+            if param < 0:
+                result = -(param)
+            else:
+                result = param
         except:
             result = float("-inf")
         params.append(result)
@@ -112,6 +130,24 @@ def postfixeval (code: list, gpFunctionList: list, identifiers: list):
 
     return stack
 
+    
+FunctionListCompact = [
+    PlusFunction("+", 2),
+    MinusFunction("-", 2),
+    ProductFunction("*", 2),
+    DivideFunction("/", 2)
+]
+
+FunctionListAll = [
+    PlusFunction("+", 2),
+    MinusFunction("-", 2),
+    ProductFunction("*", 2),
+    DivideFunction("/", 2),
+    PowerFunction("^", 2),
+    LogFunction("Log", 1),
+    SqrtFunction("Sqrt", 1),
+    AbsFunction("Abs", 1)
+] 
 
 
 if __name__ == "__main__":
