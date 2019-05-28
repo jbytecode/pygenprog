@@ -1,7 +1,8 @@
 from interpreter import GpFunction
-from interpreter import findFunction, postfixeval
-from interpreter import PlusFunction, MinusFunction, LogFunction, ProductFunction, DivideFunction
+from interpreter import findFunction, findFunctionCount, postfixeval
+from interpreter import PlusFunction, MinusFunction, LogFunction, ProductFunction, DivideFunction, SqrtFunction
 from interpreter import PowerFunction
+
 import random
 import math
 
@@ -9,14 +10,20 @@ class Chromosome:
     code = []
     functionlist = [] 
     constantpool = []
+    varlist = []
+    paramlist = []
     deep = 0
     fitness = float("-inf")
 
-    def __init__(self, functionlist: list, constantpool: list, deep: int):
+    def __init__(self, functionlist: list, constantpool: list, varlist: list, deep: int):
         self.functionlist = functionlist
         self.deep = deep
         self.constantpool = constantpool
         self.code = []
+        self.paramlist = []
+        self.paramlist.extend(constantpool)
+        self.paramlist.extend(varlist)
+        self.varlist = varlist
         for i in range(deep):
             gpfunc = random.choice(functionlist)
             numparams = gpfunc.numparams
@@ -24,13 +31,21 @@ class Chromosome:
                 k = numparams
             else:
                 k = numparams - 1
-            cons = random.choices(constantpool, k = k)
+            cons = random.choices(self.paramlist, k = k)
             self.code.extend(cons)
             self.code.append(gpfunc.name)
 
     def __str__(self):
         return(str(self.code))
 
+    def cut(self, maxdeep: int):
+        count = findFunctionCount(self.code, self.functionlist)
+        if count > maxdeep:
+            while True:
+                if findFunctionCount(self.code, self.functionlist) <= maxdeep:
+                    if findFunction(self.code[len(self.code) - 1], self.functionlist) != None:
+                        break
+                self.code.pop()
         
 class GP:
     popsize = 100
@@ -40,8 +55,9 @@ class GP:
     constantpool = None
     chromosomes = None
     deep = 3
+    maxdeep = 5
 
-    def __init__(self, fitness, funclist, varlist, constantpool, popsize = 100, deep = 3):
+    def __init__(self, fitness, funclist, varlist, constantpool, popsize = 100, deep = 3, maxdeep = 5):
         self.popsize = popsize
         self.fitness = fitness
         self.varlist = varlist
@@ -49,12 +65,13 @@ class GP:
         self.chromosomes = []
         self.funclist = funclist
         self.deep = deep
+        self.maxdeep = maxdeep
         
     
     def createRandomPopulation(self):
         self.chromosomes = []
         for i in range(self.popsize):
-            ch = Chromosome(self.funclist, self.constantpool, self.deep)
+            ch = Chromosome(self.funclist, self.constantpool, self.varlist, self.deep)
             self.chromosomes.append(ch)
         
         
@@ -95,10 +112,14 @@ class GP:
         else:
             gpfunc = findFunction(element, funclist)
             if gpfunc != None:
-                luckyfun = random.choice(funclist)
+                oldfunc = gpfunc
+                while True:
+                    luckyfun = random.choice(funclist)
+                    if luckyfun.numparams == oldfunc.numparams:
+                        break
                 offspring[random_index] = luckyfun.name
             else:
-                luckyvar = random.choice(varlist)
+                luckyvar = random.choice(list(self.varlist))
                 offspring[random_index] = luckyvar
         return offspring
 
@@ -126,10 +147,12 @@ class GP:
             offsprings = self.crossover(parent1.code, parent2.code)
             offsprings[0] = self.mutate(offsprings[0])
             offsprings[1] = self.mutate(offsprings[0])
-            ch1 = Chromosome(self.funclist,self.constantpool,self.deep)
-            ch2 = Chromosome(self.funclist,self.constantpool,self.deep)
+            ch1 = Chromosome(self.funclist, self.constantpool, self.varlist, self.deep)
+            ch2 = Chromosome(self.funclist, self.constantpool, self.varlist, self.deep)
             ch1.code = offsprings[0]
             ch2.code = offsprings[1]
+            ch1.cut(self.maxdeep)
+            ch2.cut(self.maxdeep)
             temppop.append(ch1)
             temppop.append(ch2)    
         self.chromosomes = temppop
@@ -150,10 +173,14 @@ if __name__ == "__main__":
     funclist = [
         PlusFunction("+", 2),
         MinusFunction("-", 2),
-        ProductFunction("*", 2)
+        ProductFunction("*", 2),
+        DivideFunction("/", 2),
+        LogFunction("Log", 1),
+        SqrtFunction("Sqrt", 1),
+        PowerFunction("Pow", 2)
     ]
-    varlist = {"x": 10, "y": 100}
-    constantpool = [1,2,3,4,5,6,7,8,9,10]
+    varlist = {"x": 1, "y": 2}
+    constantpool = [1,2,3,4]
 
     def abs (x):
         if x < 0:
@@ -163,9 +190,9 @@ if __name__ == "__main__":
 
     def f (ch):
         result = postfixeval(ch, funclist, varlist)[0]
-        return -abs(result - 75)   
+        return -abs(result - 400)   
 
-    gp = GP(f, funclist,varlist,constantpool, popsize = 100,  deep = 3)
+    gp = GP(f, funclist,varlist,constantpool, popsize = 100,  deep = 4, maxdeep=20)
     gp.createRandomPopulation()
     for i in range(100):
         gp.iterate()
