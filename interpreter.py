@@ -9,6 +9,8 @@ class GpFunction:
         self.numparams = numparams
     def eval(self, params: list):
         pass
+    def evalStr(self, params: list):
+        pass
 
 class PlusFunction (GpFunction):
     def eval(self, params: list):
@@ -17,6 +19,15 @@ class PlusFunction (GpFunction):
         param1 = params.pop()
         param2 = params.pop()
         params.append(param1 + param2)
+    def evalStr(self, params: list) -> str:
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param1 = params.pop()
+        param2 = params.pop()
+        if isnum(param1) and isnum(param2):
+            params.append(param1 + param2)
+        else:
+            params.append("(" + str(param1) + " + " + str(param2) + ")")
 
 class MinusFunction (GpFunction):
     def eval(self, params: list):
@@ -25,6 +36,15 @@ class MinusFunction (GpFunction):
         param1 = params.pop()
         param2 = params.pop()
         params.append(param1 - param2)
+    def evalStr(self, params: list) -> str:
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param1 = params.pop()
+        param2 = params.pop()
+        if isnum(param1) and isnum(param2):
+            params.append(param1 - param2)
+        else:
+            params.append("(" + str(param1) + " - " + str(param2) + ")")
 
 class ProductFunction (GpFunction):
     def eval(self, params: list):
@@ -33,6 +53,15 @@ class ProductFunction (GpFunction):
         param1 = params.pop()
         param2 = params.pop()
         params.append(param1 * param2)
+    def evalStr(self, params: list) -> str:
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param1 = params.pop()
+        param2 = params.pop()
+        if isnum(param1) and isnum(param2):
+            params.append(param1 * param2)
+        else:
+            params.append("(" + str(param1) + " * " + str(param2) + ")")
 
 class DivideFunction (GpFunction):
     def eval(self, params: list):
@@ -45,6 +74,15 @@ class DivideFunction (GpFunction):
         except:
             result = float("-inf")
         params.append(result)
+    def evalStr(self, params: list) -> str:
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param1 = params.pop()
+        param2 = params.pop()
+        if isnum(param1) and isnum(param2):
+            params.append(param1 / param2)
+        else:
+            params.append("(" + str(param1) + " / " + str(param2) + ")")
 
 class PowerFunction (GpFunction):
     def eval(self, params: list):
@@ -115,6 +153,16 @@ def findFunction(funcname: str, gpFunctionList: [GpFunction]):
             return gpfunc
     return None
 
+def isnum(p1):
+    #t = type(p1).__name__
+    #return (t == "float " or t == "int")
+    try:
+        a = float(p1)
+    except:
+        return False
+    return True
+
+
 def postfixeval (code: list, gpFunctionList: list, identifiers: list):
     stack = []
     for element in code:
@@ -127,7 +175,20 @@ def postfixeval (code: list, gpFunctionList: list, identifiers: list):
                 GpFunc.eval(stack)
             else:
                 stack.append(identifiers[element])
+    return stack
 
+def postfix2infix (code: list, gpFunctionList: list, identifiers: list):
+    stack = []
+    for element in code:
+        t = type(element).__name__
+        if t == "int"  or t == "float":
+            stack.append(element)
+        elif t == "str":
+            GpFunc = findFunction(element, gpFunctionList)
+            if GpFunc != None:
+                GpFunc.evalStr(stack)
+            else:
+                stack.append(identifiers[element])
     return stack
 
     

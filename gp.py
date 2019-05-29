@@ -75,7 +75,7 @@ class GP:
     
     def createRandomPopulation(self):
         self.chromosomes = []
-        for i in range(self.popsize):
+        for _ in range(self.popsize):
             ch = Chromosome(self.funclist, self.constantpool, self.varlist, self.deep)
             self.chromosomes.append(ch)
         
@@ -139,7 +139,6 @@ class GP:
         bestsolution = self.getBest()
         temppop.append(copy.copy(bestsolution))
         temppop.append(copy.copy(bestsolution))
-        print(bestsolution.code)
         for i in range(int( (len(self.chromosomes) - 2) / 2)):    
             indices1 = random.choice(range(len(self.chromosomes)))
             indices2 = random.choice(range(len(self.chromosomes)))
@@ -179,5 +178,35 @@ class GP:
                 bestc = element
         return bestc
 
+    def report(self):
+        print("--- Results of GP ---")
+        self.calculateFitness()
+        best = self.getBest()
+        print("Code: " + str(best.code))
+        print("Fitness: " + str(best.fitness))
+        varlist = copy.copy(self.varlist)
+        for key in varlist:
+            varlist[key] = str(key)
+        print("Infix: " + str(postfix2infix(best.code, self.funclist, varlist)))
 
-    
+    def interactive(self):
+        while True:
+            cmd = input("GP: ")
+            words = cmd.split(" ")
+            print(words)
+            if(len(words) == 1):
+                word = words[0]
+                if word == "iterate":
+                    self.iterate()
+                    self.report()
+                elif word == "exit":
+                    break
+                elif word == "randomize":
+                    self.createRandomPopulation()
+                    self.calculateFitness()
+                    self.report()
+            elif len(words) == 2:
+                if (words[0] == "iterate" and words[1] != ""):
+                    for _ in range(int(words[1])):
+                        self.iterate()
+                    self.report()

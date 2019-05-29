@@ -1,23 +1,29 @@
 from gp import *
 
 if __name__ == "__main__":
-    varlist = {"x1": 1, "x2": 1}
-    constantpool = list(range(1))
+    varlist = {"x": 1}
+    constantpool = [i  for i in range(1,11)]
+    myfunclist = FunctionListCompact
 
     def f (code):
-        result1 = postfixeval(code, FunctionListAll, {"x1": 0, "x2": 0})[0]
-        result2 = postfixeval(code, FunctionListAll, {"x1": 0, "x2": 1})[0]
-        result3 = postfixeval(code, FunctionListAll, {"x1": 1, "x2": 0})[0]
-        result4 = postfixeval(code, FunctionListAll, {"x1": 1, "x2": 1})[0]
-        total =  abs(result1 - 0) + abs(result2 - 1) + abs(result3 - 1) + abs(result4 - 0)
-        return -total   
+        x = [1,2,3,4,5]
+        y = [(2 * element  + 3) for element in x]
+        total = 0.0
+        for i in range(len(x)):
+            resulti = postfixeval(code, myfunclist, {"x": x[i]})[0]
+            total = total + math.pow(y[i] - resulti, 2.0)
+        return -total
 
-    gp = GP(f, FunctionListAll ,varlist,constantpool, popsize = 20,  deep = 5, maxdeep=10)
+
+    gp = GP(f, myfunclist ,varlist,constantpool, popsize = 100,  deep = 20, maxdeep = 20)
     gp.createRandomPopulation()
-    for i in range(100):
+    for i in range(1):
         gp.iterate()
 
-    gp.calculateFitness()
-    best = gp.getBest()
-    print(str(best.code))
-    print(best.eval())
+    gp.interactive()
+
+    #gp.calculateFitness()
+    #best = gp.getBest()
+    #print(str(best.code))
+    #print(postfix2infix(best.code, myfunclist, {"x": "x"}))
+    #print(best.eval())
