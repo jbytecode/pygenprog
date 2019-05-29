@@ -197,6 +197,7 @@ class GP:
         print("iterate n")
         print("maxdeep n")
         print("deep n")
+        print("popsize n")
     def interactive(self):
         while True:
             cmd = input("GP: ")
@@ -225,4 +226,9 @@ class GP:
                 if(words[0] == "deep" and words[1] != ""):
                     self.deep = int(words[1])
                     print("deep is set to " + str(self.deep))
+                if(words[0] == "popsize" and words[1] != ""):
+                    self.popsize = int(words[1])
+                    self.createRandomPopulation()
+                    print("popsize is set to " + str(self.popsize) + " and randomized population")
+                    
                 
