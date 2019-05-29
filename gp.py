@@ -189,11 +189,18 @@ class GP:
             varlist[key] = str(key)
         print("Infix: " + str(postfix2infix(best.code, self.funclist, varlist)))
 
+    def help(self):
+        print("GP interative:")
+        print("randomize")
+        print("iterate")
+        print("exit")
+        print("iterate n")
+        print("maxdeep n")
+        print("deep n")
     def interactive(self):
         while True:
             cmd = input("GP: ")
             words = cmd.split(" ")
-            print(words)
             if(len(words) == 1):
                 word = words[0]
                 if word == "iterate":
@@ -205,8 +212,17 @@ class GP:
                     self.createRandomPopulation()
                     self.calculateFitness()
                     self.report()
+                elif word == "help":
+                    self.help()
             elif len(words) == 2:
                 if (words[0] == "iterate" and words[1] != ""):
                     for _ in range(int(words[1])):
                         self.iterate()
                     self.report()
+                if(words[0] == "maxdeep" and words[1] != ""):
+                    self.maxdeep = int(words[1])
+                    print("maxdeep is set to " + str(self.maxdeep))
+                if(words[0] == "deep" and words[1] != ""):
+                    self.deep = int(words[1])
+                    print("deep is set to " + str(self.deep))
+                

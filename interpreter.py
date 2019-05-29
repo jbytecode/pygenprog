@@ -157,7 +157,7 @@ def isnum(p1):
     #t = type(p1).__name__
     #return (t == "float " or t == "int")
     try:
-        a = float(p1)
+        float(p1)
     except:
         return False
     return True
