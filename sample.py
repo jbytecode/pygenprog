@@ -9,8 +9,10 @@ if __name__ == "__main__":
         x1 = [1,2,3,4,5]
         x2 = [6,5,4,5,4]
         y = []
+        #y =  [22, 21, 20, 25, 24]
         for i in range(len(x1)):
             y.append(5 + 4 * x1[i] + 3*x2[i])
+        
         total = 0.0
         for i in range(len(x1)):
             resulti = postfixeval(code, myfunclist, {"x1": x1[i], "x2": x2[i]})[0]

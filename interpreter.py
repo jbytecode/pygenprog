@@ -97,7 +97,21 @@ class PowerFunction (GpFunction):
                 params.append(math.pow(param1, param2))
             except:
                 params.append(float("-inf"))
-            
+
+    def evalStr(self, params: list) -> str:
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param1 = params.pop()
+        param2 = params.pop()
+        if isnum(param1) and isnum(param2):
+            try:
+                params.append(math.pow(param1, param2))
+            except:
+                params.append(float("-inf"))
+        else:
+            params.append("(" + str(param1) + " ^ " + str(param2) + ")")     
+
+
 
 
 class LogFunction (GpFunction):
@@ -111,6 +125,18 @@ class LogFunction (GpFunction):
             result = float("-inf")
         params.append(result)
 
+    def evalStr(self, params: list) -> str:
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param = params.pop()
+        if isnum(param):
+            try:
+                result = math.log(param)
+            except:
+                result = float("-inf")
+            params.append(result)
+        else:
+            params.append("Log(" + str(param) + ")")
 
 class SqrtFunction (GpFunction):
     def eval(self, params: list):
