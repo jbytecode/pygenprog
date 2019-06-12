@@ -1,17 +1,32 @@
 
 import math
 
+# Defines the abstract class for
+# all functions used in a genetic 
+# programming search
 class GpFunction:
     name = "no name"
     numparams = 0
     def __init__(self, name: str, numparams: int):
         self.name = name
         self.numparams = numparams
+    # Evaluates the function and returns the result
     def eval(self, params: list):
         pass
+    # Returns a human-readable representation of an equation
+    # For example, a postfix expression 2 3 + 
+    # is evaluated to (2 + 3)
+    # Paranthesis are always used because the operator precedence 
+    # is satisfied.
     def evalStr(self, params: list):
         pass
 
+# Plus function is a GpFunction
+# which takes exactly two arguments
+# and returns the sum.
+# It is used like
+# 2 5 + 
+# in postfix notation
 class PlusFunction (GpFunction):
     def eval(self, params: list):
         if(len(params) < self.numparams):
@@ -29,6 +44,12 @@ class PlusFunction (GpFunction):
         else:
             params.append("(" + str(param1) + " + " + str(param2) + ")")
 
+# Minus function is a GpFunction
+# which takes exactly two arguments
+# and returns the difference.
+# It is used like
+# 2 5 - 
+# in postfix notation for (5 - 2)
 class MinusFunction (GpFunction):
     def eval(self, params: list):
         if(len(params) < self.numparams):
@@ -46,6 +67,12 @@ class MinusFunction (GpFunction):
         else:
             params.append("(" + str(param1) + " - " + str(param2) + ")")
 
+# Product function is a GpFunction
+# which takes exactly two arguments
+# and returns the product.
+# It is used like
+# 2 5 * 
+# in postfix notation for (2 * 5)
 class ProductFunction (GpFunction):
     def eval(self, params: list):
         if(len(params) < self.numparams):
@@ -63,6 +90,13 @@ class ProductFunction (GpFunction):
         else:
             params.append("(" + str(param1) + " * " + str(param2) + ")")
 
+# Divide function is a GpFunction
+# which takes exactly two arguments
+# and returns the division.
+# It is used like
+# 2 5 / 
+# in postfix notation for (5 / 2). 
+# The result is float.
 class DivideFunction (GpFunction):
     def eval(self, params: list):
         if(len(params) < self.numparams):
@@ -84,6 +118,12 @@ class DivideFunction (GpFunction):
         else:
             params.append("(" + str(param1) + " / " + str(param2) + ")")
 
+# Power function is a GpFunction
+# which takes exactly two arguments
+# and returns the power.
+# It is used like
+# 2 5 ^ 
+# in postfix notation for (5 ^ 2)
 class PowerFunction (GpFunction):
     def eval(self, params: list):
         if(len(params) < self.numparams):
@@ -113,7 +153,12 @@ class PowerFunction (GpFunction):
 
 
 
-
+# Log function is a GpFunction
+# which takes exactly one argument
+# and returns the natural logarithm.
+# It is used like
+# 10 log 
+# in postfix notation for ln(10)
 class LogFunction (GpFunction):
     def eval(self, params: list):
         if(len(params) < self.numparams):
@@ -138,6 +183,13 @@ class LogFunction (GpFunction):
         else:
             params.append("Log(" + str(param) + ")")
 
+
+# Sqrt function is a GpFunction
+# which takes exactly one argument
+# and returns the square root.
+# It is used like
+# 25 Sqrt 
+# in postfix notation for Sqrt(25)
 class SqrtFunction (GpFunction):
     def eval(self, params: list):
         if(len(params) < self.numparams):
@@ -149,7 +201,26 @@ class SqrtFunction (GpFunction):
             result = float("-inf")
         params.append(result)
 
+    def evalStr(self, params: list) -> str:
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param = params.pop()
+        if isnum(param):
+            try:
+                result = math.log(param)
+            except:
+                result = float("-inf")
+            params.append(result)
+        else:
+            params.append("Sqrt(" + math.sqrt(param) + ")")
 
+
+# Abs function is a GpFunction
+# which takes exactly one argument
+# and returns the absolute value.
+# It is used like
+# 10 Abs 
+# in postfix notation for |10|
 class AbsFunction (GpFunction):
     def eval(self, params: list):
         if(len(params) < self.numparams):
@@ -163,6 +234,20 @@ class AbsFunction (GpFunction):
         except:
             result = float("-inf")
         params.append(result)
+
+    def evalStr(self, params: list) -> str:
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param = params.pop()
+        if isnum(param):
+            try:
+                result = abs(param)
+            except:
+                result = float("-inf")
+            params.append(result)
+        else:
+            params.append("Abs(" + str(param) + ")")
+
 
 
 def findFunctionCount (code: str, gpFunctionList: list):
