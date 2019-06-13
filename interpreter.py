@@ -256,6 +256,8 @@ class AbsFunction (GpFunction):
 # It is used like
 # 1 2 3 4 < 
 # in postfix notation for "if 4 < 3 then return 2 else return 1"
+# it is also interpreted as 
+# param1 < param2 ? param3 : param4
 class LessThanFunction (GpFunction):
     def eval(self, params: list):
         if(len(params) < self.numparams):
@@ -281,6 +283,112 @@ class LessThanFunction (GpFunction):
         param3 = params.pop()
         param4 = params.pop()
         params.append("(" + str(param1) + " < " + str(param2)  + " ? " + str(param3) + " : " + str(param4) + ")")
+
+
+
+# BiggerThan function is a GpFunction
+# which takes exactly four arguments
+# if args1 > args2 then return args3 else return args4
+# It is used like
+# 1 2 3 4 > 
+# in postfix notation for "if 4 > 3 then return 2 else return 1"
+# it is also interpreted as 
+# param1 > param2 ? param3 : param4
+class BiggerThanFunction (GpFunction):
+    def eval(self, params: list):
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param1 = params.pop()
+        param2 = params.pop()
+        param3 = params.pop()
+        param4 = params.pop()
+        try:
+            if(param1 > param2):
+                result = param3
+            else:
+                result = param4
+        except:
+            result = float("-inf")
+        params.append(result)
+
+    def evalStr(self, params: list) -> str:
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param1 = params.pop()
+        param2 = params.pop()
+        param3 = params.pop()
+        param4 = params.pop()
+        params.append("(" + str(param1) + " > " + str(param2)  + " ? " + str(param3) + " : " + str(param4) + ")")
+
+# Equals function is a GpFunction
+# which takes exactly four arguments
+# if args1 = args2 then return args3 else return args4
+# It is used like
+# 1 2 3 4 = 
+# in postfix notation for "if 4 = 3 then return 2 else return 1"
+# it is also interpreted as 
+# param1 = param2 ? param3 : param4
+class EqualsFunction (GpFunction):
+    def eval(self, params: list):
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param1 = params.pop()
+        param2 = params.pop()
+        param3 = params.pop()
+        param4 = params.pop()
+        try:
+            if(param1 == param2):
+                result = param3
+            else:
+                result = param4
+        except:
+            result = float("-inf")
+        params.append(result)
+
+    def evalStr(self, params: list) -> str:
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param1 = params.pop()
+        param2 = params.pop()
+        param3 = params.pop()
+        param4 = params.pop()
+        params.append("(" + str(param1) + " = " + str(param2)  + " ? " + str(param3) + " : " + str(param4) + ")")
+
+
+
+# NotEquals function is a GpFunction
+# which takes exactly four arguments
+# if args1 != args2 then return args3 else return args4
+# It is used like
+# 1 2 3 4 != 
+# in postfix notation for "if 4 != 3 then return 2 else return 1"
+# it is also interpreted as 
+# param1 != param2 ? param3 : param4
+class NotEqualsFunction (GpFunction):
+    def eval(self, params: list):
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param1 = params.pop()
+        param2 = params.pop()
+        param3 = params.pop()
+        param4 = params.pop()
+        try:
+            if(param1 != param2):
+                result = param3
+            else:
+                result = param4
+        except:
+            result = float("-inf")
+        params.append(result)
+
+    def evalStr(self, params: list) -> str:
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param1 = params.pop()
+        param2 = params.pop()
+        param3 = params.pop()
+        param4 = params.pop()
+        params.append("(" + str(param1) + " != " + str(param2)  + " ? " + str(param3) + " : " + str(param4) + ")")
 
 
 

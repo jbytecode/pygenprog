@@ -198,6 +198,7 @@ class GP:
         print("maxdeep n")
         print("deep n")
         print("popsize n")
+        print("emptyconstantpool")
         print("constantpool")
         print("constantpool num1 num2 num3 ...")
     def interactive(self):
@@ -217,6 +218,8 @@ class GP:
                     self.report()
                 elif word == "constantpool":
                     print(str(self.constantpool))
+                elif word == "emptyconstantpool":
+                    self.constantpool.clear()
                 elif word == "help":
                     self.help()
             elif len(words) >= 2:
