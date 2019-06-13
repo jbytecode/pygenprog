@@ -12,6 +12,27 @@ class TestExpressions(unittest.TestCase):
         result = postfixeval([2,2, "+", "y", "-"], funclist, identifiers)
         self.assertEqual(result[0], 6)
 
+    def test_postfix_compound(self):
+        funclist = [
+            PlusFunction("+", 2),
+            MinusFunction("-", 2),
+            ProductFunction("*", 2),
+            DivideFunction("/", 2)
+        ]
+        identifiers = {"x": 3, "y": 10}
+        result = postfixeval([2, 2, "+", "y", "-", 9, "*"], funclist, identifiers)
+        self.assertEqual(result[0], 54)
+
+    def test_postfix_compound2(self):
+        funclist = [
+            PlusFunction("+", 2),
+            MinusFunction("-", 2),
+            ProductFunction("*", 2),
+            DivideFunction("/", 2)
+        ]
+        identifiers = {"x": 3, "y": 10}
+        result = postfixeval([2, 2, "+", "y", "-", 9, "/"], funclist, identifiers)
+        self.assertEqual(result[0], 9.0 / 6.0)
     def test_postfix_plus_str(self):
         code = [2, "x", "+"]
         funclist = [PlusFunction("+", 2)]
