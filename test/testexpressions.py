@@ -76,5 +76,12 @@ class TestExpressions(unittest.TestCase):
         result = postfixeval(code, funclist, {"x": "x"})
         self.assertEqual(result[0], 10)
 
+    def test_If_NotEquals (self):
+        code = [10, 100, 5, 4, "!="]
+        funclist = [NotEqualsFunction("!=", 4)]
+        result = postfixeval(code, funclist, {"x": "x"})
+        self.assertEqual(result[0], 100)
+
+
 if __name__ == '__main__':
     unittest.main()
