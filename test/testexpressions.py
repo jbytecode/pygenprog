@@ -58,5 +58,12 @@ class TestExpressions(unittest.TestCase):
         self.assertEqual(result[0], 1.0)
 
 
+    def test_If1 (self):
+        code = [10, 100, 5, 4, "<"]
+        funclist = [LessThanFunction("<", 4)]
+        result = postfixeval(code, funclist, {"x": "x"})
+        self.assertEqual(result[0], 100)
+        
+
 if __name__ == '__main__':
     unittest.main()
