@@ -198,6 +198,8 @@ class GP:
         print("maxdeep n")
         print("deep n")
         print("popsize n")
+        print("constantpool")
+        print("constantpool num1 num2 num3 ...")
     def interactive(self):
         while True:
             cmd = input("GP: ")
@@ -213,9 +215,11 @@ class GP:
                     self.createRandomPopulation()
                     self.calculateFitness()
                     self.report()
+                elif word == "constantpool":
+                    print(str(self.constantpool))
                 elif word == "help":
                     self.help()
-            elif len(words) == 2:
+            elif len(words) >= 2:
                 if (words[0] == "iterate" and words[1] != ""):
                     for _ in range(int(words[1])):
                         self.iterate()
@@ -230,5 +234,11 @@ class GP:
                     self.popsize = int(words[1])
                     self.createRandomPopulation()
                     print("popsize is set to " + str(self.popsize) + " and randomized population")
-                    
+                if(words[0] == "constantpool"):
+                    tmpList = []
+                    for tmpI in range(1, len(words)):
+                        tmpList.append(float(words[tmpI]))
+                    self.constantpool.clear()
+                    self.constantpool.extend(tmpList)
+                    print("Constant pool is now " + str(self.constantpool))
                 
