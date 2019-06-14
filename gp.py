@@ -99,24 +99,28 @@ class GP:
                 operator_indices2.append(i)
         op1_ind = random.choice(operator_indices1)
         op2_ind = random.choice(operator_indices2)
-        for i in range(op1_ind + 1):
-            newch1.append(code1[i])
-        for i in range(op2_ind + 1, len(code2)):
-            newch1.append(code2[i])
-        for i in range(op2_ind + 1):
-            newch2.append(code2[i])
-        for i in range(op1_ind + 1, len(code1)):
-            newch2.append(code1[i])
+        newch1 = code1[0:(op1_ind + 1)] + code2[(op2_ind + 1): len(code2)]
+        newch2 = code2[0:(op2_ind + 1)] + code1[(op1_ind + 1): len(code1)]
         return [newch1, newch2]
 
+    def mutateSingleNumberOrLiteral(self, offspring, index):
+        element = offspring[index]
+        t = type(element).__name__
+        if(t == "int" or t == "float"):
+            if random.uniform(0, 1) < 0.5:
+                luckynum = random.choice(self.constantpool)
+                offspring[index] = luckynum
+            else:
+                luckyvar = random.choice(list(self.varlist))
+                offspring[index] = luckyvar
+        
     def mutate(self, code: list):
         offspring = code.copy()
         random_index = random.choice(range(len(offspring)))
         element = offspring[random_index]
         t = type(element).__name__
         if(t == "int" or t == "float"):
-            luckynum = random.choice(self.constantpool)
-            offspring[random_index] = luckynum
+            self.mutateSingleNumberOrLiteral(offspring, random_index)
         else:
             gpfunc = findFunction(element, self.funclist)
             if gpfunc != None:
@@ -127,8 +131,7 @@ class GP:
                         break
                 offspring[random_index] = luckyfun.name
             else:
-                luckyvar = random.choice(list(self.varlist))
-                offspring[random_index] = luckyvar
+                self.mutateSingleNumberOrLiteral(offspring, random_index)
         return offspring
 
     def __str__(self):
@@ -203,6 +206,12 @@ class GP:
             varlist[key] = str(key)
         print("Infix: " + str(postfix2infix(best.code, self.funclist, varlist)))
 
+    def showPopulation(self):
+        i = 1
+        for element in self.chromosomes:
+            print(str(i) + ": " + str(element.fitness) + ": " + str(element.code))
+            i = i + 1
+
     def help(self):
         print("GP interative:")
         print("randomize")
@@ -215,6 +224,7 @@ class GP:
         print("emptyconstantpool")
         print("constantpool")
         print("constantpool num1 num2 num3 ...")
+        print("list")
     def interactive(self):
         while True:
             cmd = input("GP: ")
@@ -234,6 +244,9 @@ class GP:
                     print(str(self.constantpool))
                 elif word == "emptyconstantpool":
                     self.constantpool.clear()
+                elif word == "list":
+                    self.sortPopulation()
+                    self.showPopulation()
                 elif word == "help":
                     self.help()
             elif len(words) >= 2:
