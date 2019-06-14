@@ -23,7 +23,7 @@ if __name__ == "__main__":
         return -total
 
 
-    gp = GP(f, myfunclist ,varlist,constantpool, popsize = 100,  deep = 10, maxdeep = 10)
+    gp = GP(f, myfunclist ,varlist,constantpool, popsize = 100,  deep = 3, maxdeep = 3)
     gp.createRandomPopulation()
     for i in range(1):
         gp.iterate()

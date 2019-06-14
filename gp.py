@@ -38,6 +38,9 @@ class Chromosome:
     def __str__(self):
         return(str(self.code))
 
+    def __repr__(self):
+        return(str(self.code))
+
     def cut(self, maxdeep: int):
         count = findFunctionCount(self.code, self.functionlist)
         if count > maxdeep:
@@ -131,27 +134,32 @@ class GP:
     def __str__(self):
         return(str(self.chromosomes))
 
+    def select(self, ch1, ch2):
+        if ch1.fitness > ch2.fitness:
+            return ch1
+        elif ch1.fitness == ch2.fitness:
+            if len(ch1.code) < len(ch2.code):
+                return ch1
+            else:
+                return ch2
+        else:
+            return ch2
+
     def iterate(self):
         for i in range(len(self.chromosomes)):
             f = self.fitness(self.chromosomes[i].code)
             self.chromosomes[i].fitness = f
         temppop = []
-        bestsolution = self.getBest()
-        temppop.append(copy.copy(bestsolution))
-        temppop.append(copy.copy(bestsolution))
+        self.sortPopulation()
+        temppop.append(copy.copy(self.chromosomes[0]))
+        temppop.append(copy.copy(self.chromosomes[1]))
         for i in range(int( (len(self.chromosomes) - 2) / 2)):    
             indices1 = random.choice(range(len(self.chromosomes)))
             indices2 = random.choice(range(len(self.chromosomes)))
-            if(self.chromosomes[indices1].fitness > self.chromosomes[indices2].fitness):
-                parent1 = self.chromosomes[indices1]
-            else:
-                parent1 = self.chromosomes[indices2]
+            parent1 = self.select(self.chromosomes[indices1], self.chromosomes[indices2])
             indices1 = random.choice(range(len(self.chromosomes)))
             indices2 = random.choice(range(len(self.chromosomes)))
-            if(self.chromosomes[indices1].fitness > self.chromosomes[indices2].fitness):
-                parent2 = self.chromosomes[indices1]
-            else:
-                parent2 = self.chromosomes[indices2]
+            parent2 = self.select(self.chromosomes[indices1], self.chromosomes[indices2])
             offsprings = self.crossover(parent1.code, parent2.code)
             offsprings[0] = self.mutate(offsprings[0])
             offsprings[1] = self.mutate(offsprings[0])
@@ -177,6 +185,12 @@ class GP:
                 bestf = element.fitness
                 bestc = element
         return bestc
+    
+    def sortByFitness(self, ch):
+        return ch.fitness
+
+    def sortPopulation(self):
+        self.chromosomes.sort(key = self.sortByFitness, reverse = True)
 
     def report(self):
         print("--- Results of GP ---")
