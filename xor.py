@@ -25,8 +25,11 @@ if __name__ == "__main__":
 
     gp = GP(f, myfunclist ,varlist,constantpool, popsize = 100,  deep = 3, maxdeep = 3)
     gp.createRandomPopulation()
-    for i in range(1):
-        gp.iterate()
+    #for i in range(1):
+    #    gp.iterate()
 
-    gp.interactive()
+    #gp.interactive()
+    gp.iterateN(100)
+    gp.sortPopulation()
+    print(gp.chromosomes[0])
     

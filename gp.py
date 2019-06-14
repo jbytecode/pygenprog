@@ -148,6 +148,10 @@ class GP:
         else:
             return ch2
 
+    def iterateN(self, n):
+        for i in range(n):
+            self.iterate()
+
     def iterate(self):
         for i in range(len(self.chromosomes)):
             f = self.fitness(self.chromosomes[i].code)
