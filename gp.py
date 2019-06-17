@@ -6,9 +6,10 @@ import copy
 import random
 import math
 
+
 class Chromosome:
     code = []
-    functionlist = [] 
+    functionlist = []
     constantpool = []
     varlist = []
     paramlist = []
@@ -31,7 +32,7 @@ class Chromosome:
                 k = numparams
             else:
                 k = numparams - 1
-            cons = random.choices(self.paramlist, k = k)
+            cons = random.choices(self.paramlist, k=k)
             self.code.extend(cons)
             self.code.append(gpfunc.name)
 
@@ -49,12 +50,12 @@ class Chromosome:
                     if findFunction(self.code[len(self.code) - 1], self.functionlist) != None:
                         break
                 self.code.pop()
-    
+
     def eval(self):
         result = postfixeval(self.code, self.functionlist, self.varlist)
         return result
 
-    
+
 class GP:
     popsize = 100
     fitness = None
@@ -64,8 +65,10 @@ class GP:
     chromosomes = None
     deep = 3
     maxdeep = 5
+    mustIncludeList = None
+    isShortestBest = True
 
-    def __init__(self, fitness, funclist, varlist, constantpool, popsize = 100, deep = 3, maxdeep = 5):
+    def __init__(self, fitness, funclist, varlist, constantpool, popsize=100, deep=3, maxdeep=5):
         self.popsize = popsize
         self.fitness = fitness
         self.varlist = varlist
@@ -74,16 +77,21 @@ class GP:
         self.funclist = funclist
         self.deep = deep
         self.maxdeep = maxdeep
-        
-    
+        self.mustIncludeList = []
+
     def createRandomPopulation(self):
         self.chromosomes = []
         for _ in range(self.popsize):
-            ch = Chromosome(self.funclist, self.constantpool, self.varlist, self.deep)
+            ch = Chromosome(self.funclist, self.constantpool,
+                            self.varlist, self.deep)
             self.chromosomes.append(ch)
-        
-        
-    
+
+    def setIsShortestBest(self, value):
+        self.isShortestBest = value
+
+    def addMustInclude(self, s: str):
+        self.mustIncludeList.append(s)
+
     def crossover(self, code1: list, code2: list):
         operator_indices1 = []
         operator_indices2 = []
@@ -91,11 +99,11 @@ class GP:
         newch2 = []
         for i in range(len(code1)):
             func = findFunction(code1[i], self.funclist)
-            if func != None: 
+            if func != None:
                 operator_indices1.append(i)
         for i in range(len(code2)):
             func = findFunction(code2[i], self.funclist)
-            if func != None: 
+            if func != None:
                 operator_indices2.append(i)
         op1_ind = random.choice(operator_indices1)
         op2_ind = random.choice(operator_indices2)
@@ -113,7 +121,7 @@ class GP:
             else:
                 luckyvar = random.choice(list(self.varlist))
                 offspring[index] = luckyvar
-        
+
     def mutate(self, code: list):
         offspring = code.copy()
         random_index = random.choice(range(len(offspring)))
@@ -138,51 +146,62 @@ class GP:
         return(str(self.chromosomes))
 
     def select(self, ch1, ch2):
-        if ch1.fitness > ch2.fitness:
-            return ch1
-        elif ch1.fitness == ch2.fitness:
-            if len(ch1.code) < len(ch2.code):
+        if self.isShortestBest:
+            if ch1.fitness > ch2.fitness:
                 return ch1
+            elif ch1.fitness == ch2.fitness:
+                if len(ch1.code) < len(ch2.code):
+                    return ch1
+                else:
+                    return ch2
             else:
                 return ch2
         else:
-            return ch2
+            if ch1.fitness > ch2.fitness:
+                return ch1
+            else:
+                return ch2
 
     def iterateN(self, n):
         for i in range(n):
             self.iterate()
 
     def iterate(self):
-        for i in range(len(self.chromosomes)):
-            f = self.fitness(self.chromosomes[i].code)
-            self.chromosomes[i].fitness = f
+        self.calculateFitness()
         temppop = []
         self.sortPopulation()
         temppop.append(copy.copy(self.chromosomes[0]))
         temppop.append(copy.copy(self.chromosomes[1]))
-        for i in range(int( (len(self.chromosomes) - 2) / 2)):    
+        for i in range(int((len(self.chromosomes) - 2) / 2)):
             indices1 = random.choice(range(len(self.chromosomes)))
             indices2 = random.choice(range(len(self.chromosomes)))
-            parent1 = self.select(self.chromosomes[indices1], self.chromosomes[indices2])
+            parent1 = self.select(
+                self.chromosomes[indices1], self.chromosomes[indices2])
             indices1 = random.choice(range(len(self.chromosomes)))
             indices2 = random.choice(range(len(self.chromosomes)))
-            parent2 = self.select(self.chromosomes[indices1], self.chromosomes[indices2])
+            parent2 = self.select(
+                self.chromosomes[indices1], self.chromosomes[indices2])
             offsprings = self.crossover(parent1.code, parent2.code)
             offsprings[0] = self.mutate(offsprings[0])
             offsprings[1] = self.mutate(offsprings[0])
-            ch1 = Chromosome(self.funclist, self.constantpool, self.varlist, self.deep)
-            ch2 = Chromosome(self.funclist, self.constantpool, self.varlist, self.deep)
+            ch1 = Chromosome(self.funclist, self.constantpool,
+                             self.varlist, self.deep)
+            ch2 = Chromosome(self.funclist, self.constantpool,
+                             self.varlist, self.deep)
             ch1.code = offsprings[0]
             ch2.code = offsprings[1]
             ch1.cut(self.maxdeep)
             ch2.cut(self.maxdeep)
             temppop.append(ch1)
-            temppop.append(ch2)    
+            temppop.append(ch2)
         self.chromosomes = temppop
 
     def calculateFitness(self):
-         for element in self.chromosomes:
+        for element in self.chromosomes:
             element.fitness = self.fitness(element.code)
+            for mustIncludeTerm in self.mustIncludeList:
+                if element.code.count(mustIncludeTerm) == 0:
+                    element.fitness = float("-inf")
 
     def getBest(self):
         bestf = float("-inf")
@@ -192,12 +211,12 @@ class GP:
                 bestf = element.fitness
                 bestc = element
         return bestc
-    
+
     def sortByFitness(self, ch):
         return ch.fitness
 
     def sortPopulation(self):
-        self.chromosomes.sort(key = self.sortByFitness, reverse = True)
+        self.chromosomes.sort(key=self.sortByFitness, reverse=True)
 
     def report(self):
         print("--- Results of GP ---")
@@ -229,6 +248,7 @@ class GP:
         print("constantpool")
         print("constantpool num1 num2 num3 ...")
         print("list")
+
     def interactive(self):
         while True:
             cmd = input("GP: ")
@@ -267,7 +287,8 @@ class GP:
                 if(words[0] == "popsize" and words[1] != ""):
                     self.popsize = int(words[1])
                     self.createRandomPopulation()
-                    print("popsize is set to " + str(self.popsize) + " and randomized population")
+                    print("popsize is set to " + str(self.popsize) +
+                          " and randomized population")
                 if(words[0] == "constantpool"):
                     tmpList = []
                     for tmpI in range(1, len(words)):
@@ -275,4 +296,3 @@ class GP:
                     self.constantpool.clear()
                     self.constantpool.extend(tmpList)
                     print("Constant pool is now " + str(self.constantpool))
-                
