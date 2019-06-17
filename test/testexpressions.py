@@ -78,6 +78,17 @@ class TestExpressions(unittest.TestCase):
         result = postfix2infix(code, funclist, {"x": "x"})
         self.assertEqual(result[0], 1.0)
 
+    def test_exp_str(self):
+        code = [5, "x", "-", "Exp"]
+        funclist = [MinusFunction("-", 2), ExpFunction("Exp", 1)]
+        result = postfix2infix(code, funclist, {"x": "x"})
+        self.assertEqual(result[0], "Exp((x - 5))")
+
+    def test_exp(self):
+        code = [5, 5, "-", "Exp"]
+        funclist = [MinusFunction("-", 2), ExpFunction("Exp", 1)]
+        result = postfixeval(code, funclist, {"x": None})
+        self.assertEqual(result[0], 1)
 
     def test_If_Less_Than (self):
         code = [10, 100, 5, 4, "<"]

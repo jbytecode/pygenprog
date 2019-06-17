@@ -183,6 +183,36 @@ class LogFunction (GpFunction):
         else:
             params.append("Log(" + str(param) + ")")
 
+# Exp function is a GpFunction
+# which takes exactly one argument
+# and returns e^x.
+# It is used like
+# 0 Exp 
+# in postfix notation for Exp(0)
+class ExpFunction (GpFunction):
+    def eval(self, params: list):
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param = params.pop()
+        try:
+            result = math.exp(param)
+        except:
+            result = float("-inf")
+        params.append(result)
+
+    def evalStr(self, params: list) -> str:
+        if(len(params) < self.numparams):
+            return float("-inf")
+        param = params.pop()
+        if isnum(param):
+            try:
+                result = math.exp(param)
+            except:
+                result = float("-inf")
+            params.append(result)
+        else:
+            params.append("Exp(" + str(param) + ")")
+
 
 # Sqrt function is a GpFunction
 # which takes exactly one argument
@@ -459,6 +489,7 @@ FunctionListAll = [
     DivideFunction("/", 2),
     PowerFunction("^", 2),
     LogFunction("Log", 1),
+    ExpFunction("Exp", 1),
     SqrtFunction("Sqrt", 1),
     AbsFunction("Abs", 1)
 ] 
