@@ -41,6 +41,16 @@ class PlusFunction (GpFunction):
         param2 = params.pop()
         if isnum(param1) and isnum(param2):
             params.append(param1 + param2)
+        elif isnum(param1) and (not isnum(param2)):
+            if param1 == 0:
+                params.append(param2)
+            else:
+                params.append("(" + str(param1) + " + " + str(param2) + ")")
+        elif (not isnum(param1)) and isnum(param2):
+            if param2 == 0:
+                params.append(param1)
+            else:
+                params.append("(" + str(param1) + " + " + str(param2) + ")")
         else:
             params.append("(" + str(param1) + " + " + str(param2) + ")")
 
@@ -64,6 +74,16 @@ class MinusFunction (GpFunction):
         param2 = params.pop()
         if isnum(param1) and isnum(param2):
             params.append(param1 - param2)
+        elif (not isnum(param1)) and isnum(param2):
+            if param2 == 0.0:
+                params.append(str(param1))
+            else:
+                params.append("(" + str(param1) + " - " + str(param2) + ")")
+        elif (not isnum(param1)) and (not isnum(param2)):
+            if param1 == param2:
+                params.append("0")
+            else:
+                params.append("(" + str(param1) + " - " + str(param2) + ")")
         else:
             params.append("(" + str(param1) + " - " + str(param2) + ")")
 
@@ -87,6 +107,20 @@ class ProductFunction (GpFunction):
         param2 = params.pop()
         if isnum(param1) and isnum(param2):
             params.append(param1 * param2)
+        elif isnum(param1) and (not isnum(param2)):
+            if param1 == 0:
+                params.append(0)
+            elif param1 == 1:
+                params.append(param2)
+            else:
+                params.append("(" + str(param1) + " * " + str(param2) + ")")
+        elif (not isnum(param1)) and isnum(param2):
+            if param2 == 0:
+                params.append(0)
+            elif param2 == 1:
+                params.append(param1)
+            else:
+                params.append("(" + str(param1) + " * " + str(param2) + ")")
         else:
             params.append("(" + str(param1) + " * " + str(param2) + ")")
 
@@ -114,7 +148,14 @@ class DivideFunction (GpFunction):
         param1 = params.pop()
         param2 = params.pop()
         if isnum(param1) and isnum(param2):
+            if param2 == 0:
+                return float("-inf")
             params.append(param1 / param2)
+        elif isnum(param1) and (not isnum(param2)):
+            if param1 == 0:
+                params.append(0)
+            else:
+                params.append("(" + str(param1) + " / " + str(param2) + ")")
         else:
             params.append("(" + str(param1) + " / " + str(param2) + ")")
 
