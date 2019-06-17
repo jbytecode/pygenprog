@@ -189,6 +189,13 @@ class PowerFunction (GpFunction):
                 params.append(math.pow(param1, param2))
             except:
                 params.append(float("-inf"))
+        elif isnum(param2):
+            if param2 == 0:
+                params.append(1)
+            elif param2 == 1:
+                params.append(param1)
+            else:
+                params.append("(" + str(param1) + " ^ " + str(param2) + ")")
         else:
             params.append("(" + str(param1) + " ^ " + str(param2) + ")")     
 
@@ -423,7 +430,10 @@ class EqualsFunction (GpFunction):
         param2 = params.pop()
         param3 = params.pop()
         param4 = params.pop()
-        params.append("(" + str(param1) + " = " + str(param2)  + " ? " + str(param3) + " : " + str(param4) + ")")
+        if param1 == param2:
+            params.append(param3)
+        else:
+            params.append("(" + str(param1) + " = " + str(param2)  + " ? " + str(param3) + " : " + str(param4) + ")")
 
 
 
@@ -459,7 +469,10 @@ class NotEqualsFunction (GpFunction):
         param2 = params.pop()
         param3 = params.pop()
         param4 = params.pop()
-        params.append("(" + str(param1) + " != " + str(param2)  + " ? " + str(param3) + " : " + str(param4) + ")")
+        if param1 == param2:
+            params.append(param4)
+        else: 
+            params.append("(" + str(param1) + " != " + str(param2)  + " ? " + str(param3) + " : " + str(param4) + ")")
 
 
 
