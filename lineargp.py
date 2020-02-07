@@ -7,6 +7,9 @@ class Operator:
     def eval(self):
         pass
 
+    def prettyPrint(self):
+        pass
+
     def EvalSingleArgument(self, argument, localVariablePool):
         tt = type(argument).__name__
         if tt == 'float' or tt == 'int':
@@ -58,6 +61,9 @@ class BinaryOperator(Operator):
     def __str__(self):
         return str(self.__repr__())
 
+    def prettyPrint(self):
+        print(f"{self.resultRegister} = {self.operand1} {self.opname} {self.operand2}")
+
 
 class UnaryOperator(Operator):
     """
@@ -91,6 +97,8 @@ class UnaryOperator(Operator):
     def __str__(self):
         return str(self.__repr__())
 
+    def prettyPrint(self):
+        print(f"{self.resultRegister} = {self.opname} {self.operand}")
 
 class Plus(BinaryOperator):
     def __init__(self):
@@ -99,8 +107,10 @@ class Plus(BinaryOperator):
     def eval(self, localVariablePool):
         val1 = self.EvalSingleArgument(self.operand1, localVariablePool)
         val2 = self.EvalSingleArgument(self.operand2, localVariablePool)
-        localVariablePool[self.resultRegister] = val1 + val2
-
+        try:
+            localVariablePool[self.resultRegister] = val1 + val2
+        except:
+            localVariablePool[self.resultRegister] = float("inf")
 
 class Minus(BinaryOperator):
     def __init__(self):
@@ -190,7 +200,7 @@ def runProgram(codeList, variablePoolDict):
 
 
 class LinearGP:
-    def __init__(self, popSize, initialLineCount, costFunction, TypeNames, variablePool, constantPool):
+    def __init__(self, popSize, initialLineCount, maximumLineCount, costFunction, TypeNames, variablePool, constantPool):
         self.TypeNames = TypeNames
         self.variablePool = variablePool
         self.constantPool = constantPool
@@ -202,6 +212,10 @@ class LinearGP:
         self.createRandomPopulation()
         self.verbose = True
         self.detectUnaryAndBinaryTypes()
+        self.maxProgramLength = maximumLineCount
+        self.bestEverFitness = float("inf")
+        self.bestEverProgram = []
+
 
     def isBinary(self, clazz):
         return BinaryOperator in clazz.mro()
@@ -278,14 +292,29 @@ class LinearGP:
             child2.append(program2[j])
         return tuple((child1, child2))
 
-    def pickRandomUnaryOperator(self):
-        self.TypeNames.filt
 
     def mutateBinaryOperator(self, programsegment):
-        return programsegment
+        if random.random() < 0.50:
+            lenops = len(self.TypeNamesBinary)
+            randomop = self.TypeNamesBinary[random.randint(0, lenops - 1)]
+            newop = randomop()
+            newop.operand1 = programsegment.operand1
+            newop.operand2 = programsegment.operand2
+            newop.resultRegister = programsegment.resultRegister
+            return newop
+        else:
+            programsegment.generateRandomCode(self.variablePool, self.constantPool)
+            return programsegment
 
     def mutateUnaryOperator(self, programsegment):
-        return programsegment
+        #print(f"Mutating {programsegment} to:")
+        lenops = len(self.TypeNamesUnary)
+        randomop = self.TypeNamesUnary[random.randint(0, lenops - 1)]
+        newop = randomop()
+        newop.operand = programsegment.operand
+        newop.resultRegister = programsegment.resultRegister
+        #print(f"this {newop}")
+        return newop
 
 
     def mutate(self, program):
@@ -306,16 +335,29 @@ class LinearGP:
         newpop = []
         self.calculateCosts()
         bestcost, bestprogram = self.getBestCostWithProgram()
+        if bestcost < self.bestEverFitness:
+            self.bestEverFitness = bestcost
+            self.bestEverProgram = bestprogram
         if(self.verbose): print(f"*** Last best cost: {bestcost}")
         newpop.append(bestprogram)
+        if len(self.bestEverProgram) > 0:
+            newpop.append(self.bestEverProgram)
+        else:
+            newpop.append(bestprogram)
         while len(newpop) < self.popSize:
             bestParentIndex1 = self.tournament()
             bestParentIndex2 = self.tournament()
             parent1 = self.population[bestParentIndex1]
             parent2 = self.population[bestParentIndex2]
             offspring1, offspring2 = self.twoPointChrossOver(parent1, parent2)
-            offspring1 = self.mutate(offspring1)
-            offspring2 = self.mutate(offspring2)
+            if(random.random() < 0.25):
+                offspring1 = self.mutate(offspring1)
+                offspring2 = self.mutate(offspring2)
+            if(len(list(offspring1)) > self.maxProgramLength):
+                offspring1 = offspring1[0:self.maxProgramLength]
+            if(len(list(offspring2)) > self.maxProgramLength):
+                offspring2 = offspring2[0:self.maxProgramLength]
+
             if len(newpop) < self.popSize:
                 newpop.append(offspring1)
             else:
@@ -324,18 +366,21 @@ class LinearGP:
                 newpop.append(offspring2)
             else:
                 break
-        self.population = newpop
+        self.population = newpop.copy()
+
 
     def getResult(self):
-        self.calculateCosts()
-        bestcost, bestprogram = self.getBestCostWithProgram()
         resultdict = tuple((
-            bestcost,
-            str(bestprogram)
+            self.bestEverFitness,
+            str(self.bestEverProgram)
         )
         )
         return resultdict
 
+    def prettyPrintBest(self):
+        for row in self.bestEverProgram:
+            row.prettyPrint()
+        print(f"with cost {self.bestEverFitness}")
 
 TypeNames = [
     Plus,
@@ -350,9 +395,9 @@ TypeNames = [
 
 ### End of library ###
 variablePool: Dict[str, int] = {
-    "r[0]": 1,
-    "r[1]": 1,
-    "r[2]": 1
+    "y": 1,
+    "x1": 1,
+    "x2": 1
 }
 
 constantPool = [
@@ -361,18 +406,30 @@ constantPool = [
 
 
 def fitness(program):
-    varPool = variablePool.copy()
-    for line in program:
-        line.eval(varPool)
-    r0 = varPool["r[0]"]
-    r1 = varPool["r[1]"]
-    result = math.fabs(r0 - 17) + math.fabs(r1 - 23)
+    x1 = [1, 2, 3, 4, 5, 6, 7, 8, 10]
+    x2 = [2, 4, 3, 2, 1, 5, 4, 11,10]
+    y = [None] * len(x2)
+    for i in range(len(x1)):
+        y[i] = 3 + 4 * x1[i] + 5 * x2[i]
+
+    l = len(y)
+    sumsquares = 0.0
+    for i in range(l):
+        varPool = {"y": float("inf"), "x1": x1[i], "x2": x2[i]}
+        for line in program:
+            line.eval(varPool)
+        r0 = varPool["y"]
+        try:
+            sumsquares += math.pow(r0 - y[i], 2.0)
+        except:
+            sumsquares = float("inf")
+    result = sumsquares
     return result
 
 
-lp = LinearGP(100, 20, fitness, TypeNames, variablePool, constantPool)
-lp.calculateCosts()
-print(lp.costs)
-for i in range(10):
+lp = LinearGP(100, 50, 250, fitness, TypeNames, variablePool, constantPool)
+
+for i in range(1000):
     lp.iterate()
-#print(lp.getResult())
+
+print(lp.prettyPrintBest())
