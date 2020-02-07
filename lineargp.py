@@ -36,9 +36,12 @@ class BinaryOperator(Operator):
 
     def generateRandomCode(self, registerDict, constantList):
         registerList = list(registerDict)
+        registerListWithY = registerList.copy();
+        registerListWithY.append("y")
         lenReg = len(registerList)
+        lenRegWithY = len(registerListWithY)
         lenCons = len(constantList)
-        self.resultRegister = registerList[random.randint(0, lenReg - 1)]
+        self.resultRegister = registerListWithY[random.randint(0, lenRegWithY - 1)]
         if(random.random() < 0.5):
             self.operand1 = registerList[random.randint(0, lenReg - 1)]
         else:
@@ -426,6 +429,7 @@ class LinearGP:
             self.bestEverFitness = bestcost
             self.bestEverProgram = bestprogram
             print(f"*** Best ever is now {self.bestEverFitness}")
+            self.prettyPrintBest()
         #if(self.verbose): print(f"*** Last best cost: {bestcost}")
         newpop.append(bestprogram)
         if len(self.bestEverProgram) > 0:
@@ -482,37 +486,30 @@ TypeNames = [
     Exp,
     Pow,
     Log,
-    Abs,
-    Less,
-    Equals,
-    Bigger
+    Abs
 ]
 
-TypeNames = [
-    Less,
-    Equals,
-    Bigger
-]
+
 
 
 ### End of library ###
-variablePool: Dict[str, int] = {
-    "y": 0,
-    "x1": 0,
-    "x2": 0
+independentVariablePool: Dict[str, int] = {
+    "x1": None,
+    "x2": None
 }
 
-constantPool = [i for i in range(2)]
+constantPool = [i for i in range(5)]
 
 
 def fitness(program):
-    x1 = [1, 1, 0, 0]
-    x2 = [1, 0, 1, 0]
-    y =  [0, 1, 1, 0]
+    x1 = [1, 2, 3, 4]
+    x2 = [6, 7, 8, 9]
+    k = 1
+    y =  [7 * k, 9 * k, 11 * k, 13 * k]
     l = len(y)
     sumsquares = 0.0
     for i in range(l):
-        varPool = {"y": float("inf"), "x1": x1[i], "x2": x2[i]}
+        varPool = {"y": None, "x1": x1[i], "x2": x2[i]}
         for line in program:
             line.eval(varPool)
         r0 = varPool["y"]
@@ -524,7 +521,7 @@ def fitness(program):
     return result
 
 
-lp = LinearGP(100, 50, 200, fitness, TypeNames, variablePool, constantPool)
+lp = LinearGP(100, 50, 500, fitness, TypeNames, independentVariablePool, constantPool)
 
 for i in range(200):
     lp.iterate()
