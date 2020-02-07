@@ -156,7 +156,7 @@ class Log(UnaryOperator):
 
     def eval(self, localVariablePool):
         val = self.EvalSingleArgument(self.operand, localVariablePool)
-        if val < 0:
+        if val <= 0:
             localVariablePool[self.resultRegister] = float("Inf")
         else:
             localVariablePool[self.resultRegister] = math.log(val)
@@ -205,18 +205,24 @@ class LinearGP:
             self.costs[i] = self.costFunction(self.population[i])
 
     def tournament(self):
-        index1 = random.randint(0, len(self.popSize) - 1)
+        index1 = random.randint(0, self.popSize - 1)
         index2 = index1
         while index1 != index2:
-            index2 = random.randint(0, len(self.popSize) - 1)
+            index2 = random.randint(0, self.popSize - 1)
         if(self.costs[index1] < self.costs[index2]):
             return index1
         else:
             return index2
 
     def iterate(self):
-        newpop = [None] * self.popSize
-
+        newpop = []
+        self.calculateCosts()
+        while len(newpop) <= self.popSize:
+            bestParentIndex1 = self.tournament()
+            bestParentIndex2 = self.tournament()
+            newpop.append(self.population[bestParentIndex1])
+            newpop.append(self.population[bestParentIndex2])
+        self.population = newpop
 
 TypeNames = [
     Plus,
@@ -251,5 +257,8 @@ def fitness (program):
     return result
 
 lp = LinearGP(10 ,5, fitness, TypeNames, variablePool, constantPool)
+lp.calculateCosts()
+print(lp.costs)
+lp.iterate()
 lp.calculateCosts()
 print(lp.costs)
