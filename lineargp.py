@@ -1,4 +1,5 @@
 import random
+import math
 
 class Operator:
     def eval(self):
@@ -36,13 +37,13 @@ class BinaryOperator(Operator):
         self.operand2 = allOperandList[random.randint(0, lenAll -1)]
 
     def __repr__(self):
-        return {
+        return str({
             "type": "BinaryOperator",
             "op": self.opname,
             "result": self.resultRegister,
             "operand1": self.operand1,
             "operand2": self.operand2
-        }
+        })
 
     def __str__(self):
         return str(self.__repr__())
@@ -69,12 +70,12 @@ class UnaryOperator(Operator):
         self.operand = allOperandList[random.randint(0, lenAll - 1)]
 
     def __repr__(self):
-        return {
+        return str({
             "type": "UnaryOperator",
             "op": self.opname,
             "result": self.resultRegister,
             "operand": self.operand
-        }
+        })
 
     def __str__(self):
         return str(self.__repr__())
@@ -99,21 +100,156 @@ class Minus(BinaryOperator):
         val2 = self.EvalSingleArgument(self.operand2, localVariablePool)
         localVariablePool[self.resultRegister] = val1 - val2
 
+class Product(BinaryOperator):
+    def __init__(self):
+        super().__init__("*")
+
+    def eval(self, localVariablePool):
+        val1 = self.EvalSingleArgument(self.operand1, localVariablePool)
+        val2 = self.EvalSingleArgument(self.operand2, localVariablePool)
+        localVariablePool[self.resultRegister] = val1 * val2
 
 
+class Divide(BinaryOperator):
+    def __init__(self):
+        super().__init__("/")
+
+    def eval(self, localVariablePool):
+        val1 = self.EvalSingleArgument(self.operand1, localVariablePool)
+        val2 = self.EvalSingleArgument(self.operand2, localVariablePool)
+        if(val2 == 0.0):
+            localVariablePool[self.resultRegister] = float("Inf")
+        else:
+            localVariablePool[self.resultRegister] = val1 / val2
+
+class Pow(BinaryOperator):
+    def __init__(self):
+        super().__init__("^")
+
+    def eval(self, localVariablePool):
+        val1 = self.EvalSingleArgument(self.operand1, localVariablePool)
+        val2 = self.EvalSingleArgument(self.operand2, localVariablePool)
+        localVariablePool[self.resultRegister] = math.pow(val1, val2)
+
+
+class Negate(UnaryOperator):
+    def __init__(self):
+        super().__init__("(-)")
+
+    def eval(self, localVariablePool):
+        val = self.EvalSingleArgument(self.operand, localVariablePool)
+        localVariablePool[self.resultRegister] = -val
+
+
+class Exp(UnaryOperator):
+    def __init__(self):
+        super().__init__("Exp")
+
+    def eval(self, localVariablePool):
+        val = self.EvalSingleArgument(self.operand, localVariablePool)
+        localVariablePool[self.resultRegister] = math.exp(val)
+
+
+class Log(UnaryOperator):
+    def __init__(self):
+        super().__init__("Log")
+
+    def eval(self, localVariablePool):
+        val = self.EvalSingleArgument(self.operand, localVariablePool)
+        if val < 0:
+            localVariablePool[self.resultRegister] = float("Inf")
+        else:
+            localVariablePool[self.resultRegister] = math.log(val)
+
+
+def runProgram(codeList, variablePoolDict):
+    for line in codeList:
+        line.eval(variablePoolDict)
+
+
+class LinearGP:
+    def __init__(self, popSize, initialLineCount, costFunction, TypeNames, variablePool, constantPool):
+        self.TypeNames = TypeNames
+        self.variablePool = variablePool
+        self.constantPool = constantPool
+        self.popSize = popSize
+        self.costFunction = costFunction
+        self.initialLineCount = initialLineCount
+        self.population = []
+        self.costs = [None] * popSize
+        self.createRandomPopulation()
+
+
+    def createRandomPopulation(self):
+        self.population = []
+        for i in range(self.popSize):
+            program = self.generateProgram(
+                self.TypeNames,
+                self.variablePool,
+                self.constantPool
+            )
+            self.population.append(program)
+
+    def generateProgram(self, typePoolList, variablePoolDict, constantPoolList):
+        program = []
+        for index in range(self.initialLineCount):
+            opIndex = random.randint(0, len(typePoolList) - 1)
+            optype = typePoolList[opIndex]
+            opObject = optype()
+            opObject.generateRandomCode(variablePoolDict, constantPoolList)
+            program.append(opObject)
+        return program
+
+    def calculateCosts(self):
+        for i in range(self.popSize):
+            self.costs[i] = self.costFunction(self.population[i])
+
+    def tournament(self):
+        index1 = random.randint(0, len(self.popSize) - 1)
+        index2 = index1
+        while index1 != index2:
+            index2 = random.randint(0, len(self.popSize) - 1)
+        if(self.costs[index1] < self.costs[index2]):
+            return index1
+        else:
+            return index2
+
+    def iterate(self):
+        newpop = [None] * self.popSize
+
+
+TypeNames = [
+    Plus,
+    Minus,
+    Product,
+    Divide,
+    Negate,
+    Exp,
+    Pow,
+    Log
+]
+
+
+
+### End of library ###
 variablePool = {
     "r[0]": 1,
-    "r[1]": 1
+    "r[1]": 1,
+    "r[2]": 1
 }
+constantPool = [
+    1, 2, 3
+]
 
-b1 = Plus()
-b1.generateRandomCode(variablePool, [1,2,3])
-b2 = Minus()
-b2.generateRandomCode(variablePool, [1,2,3])
+def fitness (program):
+    varPool = variablePool.copy()
+    for line in program:
+        line.eval(varPool)
+    r0 = varPool["r[0]"]
+    r1 = varPool["r[1]"]
+    result = math.fabs(r0 - 17)
+    return result
 
-print([str(b1), str(b2)])
-
-b1.eval(variablePool)
-b2.eval(variablePool)
-
-print(variablePool)
+lp = LinearGP(10 ,5, fitness, TypeNames, variablePool, constantPool)
+lp.calculateCosts()
+print(lp.costs)
