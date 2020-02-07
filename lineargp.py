@@ -119,8 +119,10 @@ class Minus(BinaryOperator):
     def eval(self, localVariablePool):
         val1 = self.EvalSingleArgument(self.operand1, localVariablePool)
         val2 = self.EvalSingleArgument(self.operand2, localVariablePool)
-        localVariablePool[self.resultRegister] = val1 - val2
-
+        try:
+            localVariablePool[self.resultRegister] = val1 - val2
+        except:
+            localVariablePool[self.resultRegister] = float("inf")
 
 class Product(BinaryOperator):
     def __init__(self):
@@ -129,8 +131,10 @@ class Product(BinaryOperator):
     def eval(self, localVariablePool):
         val1 = self.EvalSingleArgument(self.operand1, localVariablePool)
         val2 = self.EvalSingleArgument(self.operand2, localVariablePool)
-        localVariablePool[self.resultRegister] = val1 * val2
-
+        try:
+            localVariablePool[self.resultRegister] = val1 * val2
+        except:
+            localVariablePool[self.resultRegister] = float("inf")
 
 class Divide(BinaryOperator):
     def __init__(self):
@@ -139,10 +143,10 @@ class Divide(BinaryOperator):
     def eval(self, localVariablePool):
         val1 = self.EvalSingleArgument(self.operand1, localVariablePool)
         val2 = self.EvalSingleArgument(self.operand2, localVariablePool)
-        if (val2 == 0.0):
-            localVariablePool[self.resultRegister] = float("Inf")
-        else:
+        try:
             localVariablePool[self.resultRegister] = val1 / val2
+        except:
+            localVariablePool[self.resultRegister] = float("inf")
 
 
 class Pow(BinaryOperator):
@@ -153,12 +157,58 @@ class Pow(BinaryOperator):
         val1 = self.EvalSingleArgument(self.operand1, localVariablePool)
         val2 = self.EvalSingleArgument(self.operand2, localVariablePool)
         try:
-            result = math.pow(val1, val2)
-        except OverflowError:
-            result = float("inf")
-        except ValueError:
-            result = float("inf")
-        localVariablePool[self.resultRegister] = result
+            localVariablePool[self.resultRegister]  = math.pow(val1, val2)
+        except:
+            localVariablePool[self.resultRegister] = float("inf")
+
+class Less(BinaryOperator):
+    def __init__(self):
+        super().__init__("<")
+
+    def eval(self, localVariablePool):
+        val1 = self.EvalSingleArgument(self.operand1, localVariablePool)
+        val2 = self.EvalSingleArgument(self.operand2, localVariablePool)
+        try:
+            if val1 < val2:
+                localVariablePool[self.resultRegister]  = 1
+            else:
+                localVariablePool[self.resultRegister]  = 0
+        except:
+            localVariablePool[self.resultRegister] = float("inf")
+
+
+class Equals(BinaryOperator):
+    def __init__(self):
+        super().__init__("<")
+
+    def eval(self, localVariablePool):
+        val1 = self.EvalSingleArgument(self.operand1, localVariablePool)
+        val2 = self.EvalSingleArgument(self.operand2, localVariablePool)
+        try:
+            if val1 == val2:
+                localVariablePool[self.resultRegister]  = 1
+            else:
+                localVariablePool[self.resultRegister]  = 0
+        except:
+            localVariablePool[self.resultRegister] = float("inf")
+
+
+class Bigger(BinaryOperator):
+    def __init__(self):
+        super().__init__("<")
+
+    def eval(self, localVariablePool):
+        val1 = self.EvalSingleArgument(self.operand1, localVariablePool)
+        val2 = self.EvalSingleArgument(self.operand2, localVariablePool)
+        try:
+            if val1 > val2:
+                localVariablePool[self.resultRegister]  = 1
+            else:
+                localVariablePool[self.resultRegister]  = 0
+        except:
+            localVariablePool[self.resultRegister] = float("inf")
+
+
 
 class Negate(UnaryOperator):
     def __init__(self):
@@ -166,7 +216,10 @@ class Negate(UnaryOperator):
 
     def eval(self, localVariablePool):
         val = self.EvalSingleArgument(self.operand, localVariablePool)
-        localVariablePool[self.resultRegister] = -val
+        try:
+            localVariablePool[self.resultRegister] = -val
+        except:
+            localVariablePool[self.resultRegister] = float("inf")
 
 
 class Exp(UnaryOperator):
@@ -177,7 +230,7 @@ class Exp(UnaryOperator):
         val = self.EvalSingleArgument(self.operand, localVariablePool)
         try:
             result = math.exp(val)
-        except OverflowError:
+        except:
             result = float("inf")
         localVariablePool[self.resultRegister] = result
 
@@ -188,15 +241,23 @@ class Log(UnaryOperator):
 
     def eval(self, localVariablePool):
         val = self.EvalSingleArgument(self.operand, localVariablePool)
-        if val <= 0:
-            localVariablePool[self.resultRegister] = float("Inf")
-        else:
+        try:
             localVariablePool[self.resultRegister] = math.log(val)
+        except:
+            localVariablePool[self.resultRegister] = float("Inf")
 
 
-def runProgram(codeList, variablePoolDict):
-    for line in codeList:
-        line.eval(variablePoolDict)
+class Abs(UnaryOperator):
+    def __init__(self):
+        super().__init__("Abs")
+
+    def eval(self, localVariablePool):
+        val = self.EvalSingleArgument(self.operand, localVariablePool)
+        try:
+            localVariablePool[self.resultRegister] = math.fbas(val)
+        except:
+            localVariablePool[self.resultRegister] = float("Inf")
+
 
 
 class LinearGP:
@@ -270,7 +331,33 @@ class LinearGP:
         else:
             return index2
 
-    def twoPointChrossOver(self, program1, program2):
+    def min(self, i1, i2):
+        if i1 < i2:
+            return i1
+        else:
+            return i2
+
+    def OnePointCrossOver(self, program1, program2):
+        l1 = len(program1)
+        l2 = len(program2)
+        min = self.min(l1, l2)
+        child1 = []
+        child2 = []
+        cutpoint = random.randint(0, min)
+        for i in range(0, cutpoint):
+            child1.append(program1[i])
+        for i in range(cutpoint, l2):
+            child1.append(program2[i])
+        cutpoint = random.randint(0, min)
+        for i in range(0, cutpoint):
+            child2.append(program2[i])
+        for i in range(cutpoint, l1):
+            child2.append(program1[i])
+        return tuple((child1, child2))
+
+
+
+    def TwoPointCrossOver(self, program1, program2):
         if len(program1) < 2 or len(program2) < 2:
             return tuple((program1, program2))
         cutpoints_for1 = random.sample(range(0, len(program1)), 2)
@@ -294,7 +381,7 @@ class LinearGP:
 
 
     def mutateBinaryOperator(self, programsegment):
-        if random.random() < 0.50:
+        if random.random() < 0.80:
             lenops = len(self.TypeNamesBinary)
             randomop = self.TypeNamesBinary[random.randint(0, lenops - 1)]
             newop = randomop()
@@ -338,7 +425,8 @@ class LinearGP:
         if bestcost < self.bestEverFitness:
             self.bestEverFitness = bestcost
             self.bestEverProgram = bestprogram
-        if(self.verbose): print(f"*** Last best cost: {bestcost}")
+            print(f"*** Best ever is now {self.bestEverFitness}")
+        #if(self.verbose): print(f"*** Last best cost: {bestcost}")
         newpop.append(bestprogram)
         if len(self.bestEverProgram) > 0:
             newpop.append(self.bestEverProgram)
@@ -349,8 +437,11 @@ class LinearGP:
             bestParentIndex2 = self.tournament()
             parent1 = self.population[bestParentIndex1]
             parent2 = self.population[bestParentIndex2]
-            offspring1, offspring2 = self.twoPointChrossOver(parent1, parent2)
-            if(random.random() < 0.25):
+            if random.random() < 0.80:
+                offspring1, offspring2 = self.TwoPointCrossOver(parent1, parent2)
+            else:
+                offspring1, offspring2 = parent1, parent2
+            if(random.random() < 0.05):
                 offspring1 = self.mutate(offspring1)
                 offspring2 = self.mutate(offspring2)
             if(len(list(offspring1)) > self.maxProgramLength):
@@ -390,28 +481,34 @@ TypeNames = [
     Negate,
     Exp,
     Pow,
-    Log
+    Log,
+    Abs,
+    Less,
+    Equals,
+    Bigger
 ]
+
+TypeNames = [
+    Less,
+    Equals,
+    Bigger
+]
+
 
 ### End of library ###
 variablePool: Dict[str, int] = {
-    "y": 1,
-    "x1": 1,
-    "x2": 1
+    "y": 0,
+    "x1": 0,
+    "x2": 0
 }
 
-constantPool = [
-    1.0, 2.0, 3.0
-]
+constantPool = [i for i in range(2)]
 
 
 def fitness(program):
-    x1 = [1, 2, 3, 4, 5, 6, 7, 8, 10]
-    x2 = [2, 4, 3, 2, 1, 5, 4, 11,10]
-    y = [None] * len(x2)
-    for i in range(len(x1)):
-        y[i] = 3 + 4 * x1[i] + 5 * x2[i]
-
+    x1 = [1, 1, 0, 0]
+    x2 = [1, 0, 1, 0]
+    y =  [0, 1, 1, 0]
     l = len(y)
     sumsquares = 0.0
     for i in range(l):
@@ -427,9 +524,9 @@ def fitness(program):
     return result
 
 
-lp = LinearGP(100, 50, 250, fitness, TypeNames, variablePool, constantPool)
+lp = LinearGP(100, 50, 200, fitness, TypeNames, variablePool, constantPool)
 
-for i in range(1000):
+for i in range(200):
     lp.iterate()
 
 print(lp.prettyPrintBest())
